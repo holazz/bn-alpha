@@ -5,9 +5,14 @@ export function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/api/')) {
     const origin = request.headers.get('origin')
     const referer = request.headers.get('referer')
-    const allowedDomains = ['http://localhost:3000', 'https://bn-alpha.site', 'https://www.bn-alpha.site']
-    const isValidOrigin = origin && allowedDomains.includes(origin)
-    const isValidReferer = referer && allowedDomains.some(domain => referer.startsWith(domain))
+    const defaultAllowedDomains = ['http://localhost:3000', 'https://bn-alpha.site', 'https://www.bn-alpha.site']
+    const dynamicAllowedDomains = new Set(defaultAllowedDomains)
+    if (request.nextUrl.origin) {
+      dynamicAllowedDomains.add(request.nextUrl.origin)
+    }
+    const allowedDomains = Array.from(dynamicAllowedDomains)
+    const isValidOrigin = !!origin && dynamicAllowedDomains.has(origin)
+    const isValidReferer = !!referer && allowedDomains.some(domain => referer.startsWith(domain))
 
     if (!isValidOrigin && !isValidReferer) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -22,8 +27,21 @@ export function middleware(request: NextRequest) {
 
     const response = NextResponse.next()
 
+    let corsOrigin = allowedDomains[0]
+    if (isValidOrigin && origin) {
+      corsOrigin = origin
+    }
+    else if (referer && isValidReferer) {
+      try {
+        corsOrigin = new URL(referer).origin
+      }
+      catch {
+        corsOrigin = allowedDomains[0]
+      }
+    }
+
     // CORS Headers
-    response.headers.set('Access-Control-Allow-Origin', origin || allowedDomains[0])
+    response.headers.set('Access-Control-Allow-Origin', corsOrigin)
     response.headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
     response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-API-Key')
     response.headers.set('Access-Control-Max-Age', '86400')
