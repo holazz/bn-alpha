@@ -7,10 +7,7 @@ import { WBNB_ADDRESS } from '@/constants'
 import { getRandomElementFromArray } from '@/lib/utils'
 
 const client = axios.create({
-  baseURL: 'https://api.etherscan.io',
-  params: {
-    chainId: 56,
-  },
+  baseURL: 'https://api.bscscan.com/api',
 })
 
 client.interceptors.request.use(
@@ -92,7 +89,7 @@ export async function getTokenPrice({ symbol, address }: { symbol: string, addre
 }
 
 export async function getBlockNumberByTimestamp(timestamp: number) {
-  const res = await client.get('/v2/api', {
+  const res = await client.get('', {
     params: {
       module: 'block',
       action: 'getblocknobytime',
@@ -129,7 +126,7 @@ export async function getTransactions<T extends keyof TransactionActionMap>({
   startblock?: number
   endblock?: number
 }): Promise<TransactionActionMap[T][]> {
-  const res = await client.get<{ result: TransactionActionMap[T][] }>('/v2/api', {
+  const res = await client.get<{ result: TransactionActionMap[T][] }>('', {
     params: {
       module: 'account',
       action,
