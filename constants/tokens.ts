@@ -1439,7 +1439,7 @@ const tokens: AlphaTokenInfo[] = [
   {
     chainId: '56',
     contractAddress: '0x783c3f003f172c6ac5ac700218a357d2d66ee2a2',
-    name: `BSquared Token`,
+    name: `BSquared Network`,
     symbol: 'B2',
     decimals: 18,
   },
